@@ -12,6 +12,8 @@ import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 @Injectable()
 export class SubscriptionService implements OnModuleInit {
   private mockSubscriptions: Record<string, Subscription> = {};
+  private readonly IS_VERCEL_ENV =
+    process.env.VERCEL === '1' || process.env.VERCEL === 'true';
   private readonly DATA_FILE_PATH = path.join(
     __dirname,
     '..',
@@ -22,7 +24,33 @@ export class SubscriptionService implements OnModuleInit {
   );
 
   async onModuleInit() {
-    await this.loadSubscriptionFromFile();
+    if (!this.IS_VERCEL_ENV) {
+      await this.loadSubscriptionFromFile();
+    } else {
+      console.log(
+        'Running on Vercel. Initializing with default in-memory mock data.',
+      );
+      this.mockSubscriptions = {
+        USER_001: {
+          userId: 'USER_001',
+          plan: 'annual_spiritual',
+          status: 'active',
+          expiresAt: formatISO(addDays(new Date(), 365)) + 'Z',
+        },
+        USER_002: {
+          userId: 'USER_002',
+          plan: 'free',
+          status: 'inactive',
+          expiresAt: formatISO(addDays(new Date(), 30)) + 'Z',
+        },
+        USER_003: {
+          userId: 'USER_003',
+          plan: 'monthly_spiritual',
+          status: 'active',
+          expiresAt: formatISO(addDays(new Date(), 30)) + 'Z',
+        },
+      };
+    }
   }
 
   private async loadSubscriptionFromFile() {
@@ -48,6 +76,13 @@ export class SubscriptionService implements OnModuleInit {
   }
 
   private async saveSubscriptionsToFile(): Promise<void> {
+    if (this.IS_VERCEL_ENV) {
+      console.log(
+        'Skipping file save: Running on Vercel (read-only file system). Data will be temporary.',
+      );
+      return;
+    }
+
     try {
       const dir = path.dirname(this.DATA_FILE_PATH);
       await fs.mkdir(dir, { recursive: true });
@@ -59,7 +94,9 @@ export class SubscriptionService implements OnModuleInit {
       console.log('Subscriptions saved to file: ' + this.DATA_FILE_PATH);
     } catch (err) {
       console.error('Error saving subscriptions to file: ' + err);
-      throw new InternalServerErrorException('Failed to save subscriptions');
+      throw new InternalServerErrorException(
+        `Failed to save subscriptions, ${err}`,
+      );
     }
   }
 
