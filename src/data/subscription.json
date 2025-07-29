@@ -1,0 +1,20 @@
+{
+  "USER_001": {
+    "userId": "USER_001",
+    "plan": "annual_spiritual",
+    "status": "active",
+    "expiresAt": "2026-07-28T00:00:00Z"
+  },
+  "USER_002": {
+    "userId": "USER_002",
+    "plan": "free",
+    "status": "inactive",
+    "expiresAt": "2025-08-28T00:00:00Z"
+  },
+  "USER_003": {
+    "userId": "USER_003",
+    "plan": "monthly_spiritual",
+    "status": "active",
+    "expiresAt": "2025-08-28T00:00:00Z"
+  }
+}
